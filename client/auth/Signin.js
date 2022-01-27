@@ -12,7 +12,7 @@ import {Redirect} from 'react-router-dom'
 import {signin} from './api-auth.js'
 //adjust the import lib
 import {Link} from 'react-router-dom'
-import {useLocation} from 'react-router-dom'
+import {Navigate , useLocation} from 'react-router-dom'
 
 
 const useStyles = makeStyles(theme => ({
@@ -77,8 +77,11 @@ export default function Signin(props) {
       }
   }
   const {redirectToReferrer} = values
+ 
+  //const navigate = useNavigate()
   if (redirectToReferrer) {
-      return (<Link to={from}/>)
+      // navigate({from})
+      return  (<Navigate to={from}/>)
   }
 
   return (

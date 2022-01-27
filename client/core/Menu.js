@@ -14,6 +14,8 @@ import {
     useHistory,
   } from "react-router-dom";
 
+  import { Navigate } from 'react-router-dom'
+
 const isActive = (history, path) => {
   if (location.pathname == path)
     return {color: '#ff4081'}
@@ -74,7 +76,7 @@ const Menu = withRouter(({history}) => (
             <Button style={isActive( "/user/" + auth.isAuthenticated().user._id)}>My Profile</Button>
           </Link>
           <Button color="inherit" onClick={() => {
-              auth.clearJWT(() => history.push('/'))
+              auth.clearJWT(() => {<Navigate to='/'/>})
             }}>Sign out</Button>
         </span>)
       }

@@ -13,6 +13,7 @@ import auth from './../auth/auth-helper'
 import {read, update} from './api-user.js'
 import {Redirect,useNavigate , Link} from 'react-router-dom'
 import { useParams } from 'react-router-dom'
+import { contentSecurityPolicy } from 'helmet'
 
 const useStyles = makeStyles(theme => ({
   card: {
@@ -37,69 +38,84 @@ const useStyles = makeStyles(theme => ({
   submit: {
     margin: 'auto',
     marginBottom: theme.spacing(2)
+  }, 
+  
+  bigAvatar: {
+    width: 60,
+    height: 60,
+    margin: 'auto'
+  },
+  input: {
+    display: 'none'
+  },
+  filename:{
+    marginLeft:'10px'
   }
 }))
 
 export default function EditProfile({ match }) {
+
   const classes = useStyles()
   const [values, setValues] = useState({
     name: '',
-    password: '',
+    about: '', 
     photo: '',
     email: '',
-    open: false,
     error: '',
+    password: '',
     redirectToProfile: false,
     id: ''
   })
   const jwt = auth.isAuthenticated()
 
   const  {userId}  = useParams()
+
+ console.log( `the usrid is : ${userId}`)
   const navigate = useNavigate()
 
   useEffect(() => {
     const abortController = new AbortController()
     const signal = abortController.signal
- 
-
-    read({userId}, {t: jwt.token}, signal).then((data) => {
+    //console.log( `the id is ${data._id}`)
+    read({ userId }, {t: jwt.token}, signal).then((data) => {
       if (data && data.error) {
         setValues({...values, error: data.error})
       } else {
-        setValues({...values, name: data.name, email: data.email})
+        setValues({...values, id: data._id ,name: data.name, email: data.email, about: data.about})
       }
     })
     return function cleanup(){
       abortController.abort()
     }
 
-  }, [])
+  }, [userId])
 
   const clickSubmit = () => {
+
+    
     let userData = new FormData()
     values.name && userData.append('name', values.name)
     values.email && userData.append('email', values.email)
     values.passoword && userData.append('passoword', values.passoword)
     values.about && userData.append('about', values.about)
     values.photo && userData.append('photo', values.photo)
-    
     update({
       userId : userId
-    }, {
-      t: jwt.token
-    }, userData).then((data) => {
-      if (data && data.error) {
-        setValues({...values, error: data.error})
-      } else {
-        setValues({...values, userId: data._id, redirectToProfile: true})
-      }
-    })
+      }, {
+        t: jwt.token
+      }, userData).then((data) => {
+        if (data && data.error) {
+          setValues({...values, error: data.error})
+        } else {
+          setValues({...values, redirectToProfile: true})
+        }
+      })
   }
   const handleChange = name => event => {
     const value = name === 'photo'
         ? event.target.files[0]
         : event.target.value
-    setValues({...values, [name]: event.target.value})
+    setValues({...values, [name]: value})
   }
 
   const photoUrl = values.id ? `/api/users/photo/${values.id}?${new Date().getTime()}`
@@ -116,13 +132,13 @@ export default function EditProfile({ match }) {
             Edit Profile
           </Typography>
           <Avatar src={photoUrl} className={classes.bigAvatar}/><br/>
-          <input accept="image/*" onChange={handleChange('photo')} className={classes.input} id="icon-button-file" type="file" />
+          <input accept="image/*" onChange={handleChange('photo')} style={{display:'none'}} className={classes.input} id="icon-button-file" type="file" />
           <label htmlFor="icon-button-file">
             <Button variant="contained" color="default" component="span">
-              Upload
-              <FileUpload/>
+                Upload <FileUpload/>
             </Button>
-          </label> <span className={classes.filename}>{values.photo ? values.photo.name : ''}</span><br/>
+          </label> 
+          <span className={classes.filename}>{values.photo ? values.photo.name : ''}</span><br/>
           <TextField id="name" label="Name" className={classes.textField} value={values.name} onChange={handleChange('name')} margin="normal"/><br/>
           <TextField
                       id="multiline-flexible"
